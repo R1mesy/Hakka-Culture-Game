@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>山城的天然味精：野薑花粽解謎（互動解謎版）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;800&display=swap">
+<style>
+/* 主題：油羅溪畔的傍晚。版面：情境 → 進度 → 4 張關卡卡片（依序開啟）→ 故事拼圖 → 拼湊故事 → 完成 */
+:root{
+  --night:#13261D;--moss:#1E3329;--lily:#F4F1E6;--ink:#1E2A22;--mist:#B9C7B6;--ginger:#D9A35B;--leaf:#86A872;--ink-soft:#4B574D;--line:#4A6B57;
+  --env:#D9E3EA;--env-ink:#24425A;--pla:#DCE8D2;--pla-ink:#2F4A26;--ori:#F3DFC0;--ori-ink:#6B4114;
+  --display:'Noto Serif TC','Songti TC',Georgia,serif;
+  --body:'Noto Sans TC','PingFang TC','Microsoft JhengHei',Arial,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--night);color:var(--lily);font-family:var(--body);line-height:1.7}
+#fireflies{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:28px 18px 64px;display:flex;flex-direction:column;gap:22px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{color:var(--ginger);font-size:14px;letter-spacing:.2em;margin:0}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(32px,5.5vw,52px);line-height:1.2;margin:0}
+.lead{color:var(--mist);font-size:17px;max-width:46em;margin:0}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px;background:var(--moss);border-radius:16px;padding:14px 18px}
+.locks{display:flex;gap:8px}
+.lk{width:30px;height:34px;display:grid;place-items:center}
+.lk svg{width:26px;height:30px}
+.stat{font-size:16px;font-weight:700}
+.stat small{display:block;color:var(--mist);font-weight:400;font-size:13px}
+.spacer{flex:1}
+.btn{font:inherit;font-weight:700;font-size:16px;border:none;border-radius:999px;padding:11px 20px;cursor:pointer;background:var(--ginger);color:var(--night)}
+.btn.ghost{background:transparent;color:var(--lily);border:1.5px solid #5B7A66}
+.btn.dark{background:var(--moss);color:var(--lily)}
+.btn:focus-visible,.tile:focus-visible,.part:focus-visible,.frag:focus-visible,input:focus-visible,.linkish:focus-visible{outline:3px solid var(--ginger);outline-offset:2px}
+.btn[disabled]{opacity:.45;cursor:default}
+.levels{display:flex;flex-direction:column;gap:16px}
+.level{border-radius:18px;padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.level.locked{border:1.5px dashed var(--line);color:var(--mist)}
+.level.active{background:var(--moss);border:2px solid var(--ginger)}
+.level.solved{background:var(--lily);color:var(--ink)}
+.lvhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.lvno{font-family:var(--display);font-size:15px;font-weight:800;letter-spacing:.1em;padding:2px 12px;border-radius:999px;background:rgba(217,163,91,.18);color:var(--ginger)}
+.level.solved .lvno{background:#E9E3D0;color:#6B4114}
+.lvhead h2{font-family:var(--display);font-size:22px;margin:0}
+.lvtype{font-size:13px;color:var(--mist)}
+.level.solved .lvtype{color:var(--ink-soft)}
+.q{margin:0;font-size:18px}
+.slots{display:flex;gap:10px}
+.slot{width:64px;height:64px;border-radius:14px;border:2px dashed var(--line);display:grid;place-items:center;font-family:var(--display);font-size:32px;font-weight:800;color:var(--lily)}
+.slot.f{border:2px solid var(--ginger);background:#22402F}
+.tiles{display:flex;gap:10px;flex-wrap:wrap}
+.tile{font:inherit;font-family:var(--display);font-size:30px;font-weight:800;width:64px;height:64px;border-radius:14px;border:2px solid #C9C2AC;background:var(--lily);color:var(--ink);cursor:pointer}
+.tile[disabled]{opacity:.25;cursor:default}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row input{font:inherit;font-size:22px;letter-spacing:.25em;text-align:center;width:180px;padding:9px 12px;border-radius:12px;border:2px solid var(--line);background:var(--night);color:var(--lily)}
+.parts{display:grid;grid-template-columns:repeat(4,minmax(0,140px));gap:10px}
+.part{font:inherit;font-size:20px;font-weight:700;padding:16px 6px;border-radius:14px;border:2px solid #C9C2AC;background:var(--lily);color:var(--ink);cursor:pointer}
+.part.wrong{border-color:#B5523B;background:#F6E1DA}
+.fb{margin:0;font-size:15px;min-height:1.4em}
+.linkish{background:none;border:none;color:var(--ginger);font:inherit;font-size:14px;cursor:pointer;padding:0;text-decoration:underline;align-self:flex-start}
+.hint{margin:0;font-size:15px;color:var(--ginger)}
+.window{border-radius:14px;overflow:hidden;border:6px solid #6B4A2A;max-width:520px}
+.window svg,.window img{display:block;width:100%;height:auto}
+.window{max-width:420px}
+.got{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.got p{margin:0;font-weight:700;color:#2F4A26}
+.puzzle{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.piece{border-radius:14px;padding:14px 16px;min-height:120px;border:1.5px dashed var(--line);color:var(--mist);font-size:14px;display:flex;flex-direction:column;gap:6px}
+.piece.on{background:var(--lily);color:var(--ink);border:1.5px solid var(--lily)}
+.piece b{font-family:var(--display);font-size:17px}
+.piece.torn-b{clip-path:polygon(0 8%,10% 0,22% 7%,35% 1%,48% 8%,60% 0,74% 6%,88% 0,100% 7%,100% 100%,0 100%)}
+.piece.torn-a{clip-path:polygon(0 0,100% 0,100% 93%,88% 100%,74% 94%,60% 100%,48% 92%,35% 99%,22% 93%,10% 100%,0 92%)}
+.panel{background:var(--moss);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.panel h2{font-family:var(--display);font-size:22px;margin:0}
+.panel>p{margin:0;color:var(--mist);font-size:15px}
+.hidden{display:none!important}
+.order{display:flex;flex-direction:column;gap:10px}
+.frag{font:inherit;text-align:left;font-size:16px;padding:14px 16px;border-radius:14px;border:2px solid #C9C2AC;background:var(--lily);color:var(--ink);cursor:pointer;display:flex;gap:14px;align-items:flex-start}
+.frag .n{width:34px;height:34px;border-radius:50%;border:2px dashed #9C8F6E;display:grid;place-items:center;font-weight:800;flex:0 0 34px;color:#6B4114}
+.frag.done{border-color:#4F7A31;background:#E3EFD8;cursor:default}
+.frag.done .n{border:2px solid #4F7A31;background:#4F7A31;color:#fff}
+.frag.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.final{background:var(--ginger);color:var(--night);border-radius:20px;padding:26px;display:none;flex-direction:column;gap:12px}
+.final.show{display:flex}
+.final h2{font-family:var(--display);font-size:clamp(24px,4vw,34px);margin:0;line-height:1.3}
+.final p{margin:0}
+.krow{display:flex;gap:12px;align-items:flex-start}
+.chip{display:inline-block;font-size:13px;font-weight:700;padding:3px 12px;border-radius:999px;white-space:nowrap}
+.c-env{background:var(--env);color:var(--env-ink)}.c-pla{background:var(--pla);color:var(--pla-ink)}.c-ori{background:var(--ori);color:var(--ori-ink)}
+.final .discuss{background:rgba(19,38,29,.12);border-radius:12px;padding:12px 16px}
+dialog{border:none;border-radius:20px;padding:0;max-width:600px;width:calc(100% - 28px);background:var(--lily);color:var(--ink)}
+dialog::backdrop{background:rgba(8,18,13,.78)}
+.dlg{padding:26px;display:flex;flex-direction:column;gap:12px}
+.dlg .tag{font-size:14px;color:#6B4114;margin:0;font-weight:700}
+.dlg h2{font-family:var(--display);font-size:25px;margin:0;line-height:1.3}
+.dlg .story{font-size:17px;margin:0}
+.dlg .src{font-size:13px;color:var(--ink-soft);margin:0}
+.dlg .src a{color:#6B4114}
+footer{display:flex;gap:16px;flex-wrap:wrap;color:var(--mist);font-size:14px;align-items:center}
+#teacher{display:none;flex-direction:column;gap:18px}
+body.teacher #teacher{display:flex}
+body.teacher #game{display:none}
+#game{display:flex;flex-direction:column;gap:22px}
+table{border-collapse:collapse;width:100%;background:var(--lily);color:var(--ink);border-radius:14px;overflow:hidden;font-size:15px}
+th,td{padding:10px 12px;border-bottom:1px solid #D8D2BF;text-align:left;vertical-align:top}
+th{background:#E9E3D0}
+.note{background:var(--moss);border-radius:14px;padding:14px 18px;color:var(--mist);font-size:15px}
+@media (max-width:560px){.parts{grid-template-columns:repeat(2,1fr)}.slot,.tile{width:56px;height:56px;font-size:26px}}
+@media (prefers-reduced-motion:reduce){#fireflies{display:none}}
+</style>
+</head>
+<body>
+<canvas id="fireflies" aria-hidden="true"></canvas>
+<div class="wrap">
+
+<section id="game">
+<header>
+<p class="eyebrow">內灣・野薑花粽解謎・互動解謎版</p>
+<h1>山城的天然味精</h1>
+<p class="lead">野薑花粽的故事被撕成碎片，藏在 4 道關卡後面。一關一關解開，把碎片收進「故事拼圖」，最後把故事排回正確的順序，說出內灣為什麼會有野薑花粽！</p>
+</header>
+
+<div class="bar" aria-live="polite">
+<div class="locks" id="locks" aria-label="關卡"></div>
+<div class="stat" id="lockStat"></div>
+<div class="stat" id="pieceStat"></div>
+<div class="spacer"></div>
+<div class="stat" id="timer">00:00<small>已用時間</small></div>
+</div>
+
+<div class="levels" id="levels"></div>
+
+<div class="panel">
+<h2>故事拼圖</h2>
+<p>每解開一關，就會得到一片故事碎片。點一下可以放大閱讀。</p>
+<div class="puzzle" id="pieces"></div>
+</div>
+
+<section class="panel hidden" id="orderPanel" aria-labelledby="orderTitle">
+<h2 id="orderTitle">最後一關：把故事排回正確的順序</h2>
+<p>3 段故事都到手了！把它們排成說得通的順序，從「山城的樣子」說起，一路說到「野薑花粽」。點錯會從頭來。</p>
+<div class="order" id="order"></div>
+<p class="fb" id="orderFb" aria-live="polite"></p>
+</section>
+
+<div class="final" id="final" aria-live="polite">
+<p style="font-size:14px;letter-spacing:.15em">故事拼好了・解謎成功</p>
+<h2>一顆野薑花粽，讓你想到內灣。</h2>
+<div class="krow"><span class="chip c-env">環境</span><p>① 內灣以前是礦鎮，礦挖完後，山城慢慢安靜下來。</p></div>
+<div class="krow"><span class="chip c-pla">動植物</span><p>② 山裡買調味料不容易，客家人用溪邊的野薑花調味，成了「天然味精」。</p></div>
+<div class="krow"><span class="chip c-ori">人（故事）</span><p>③ 當地人把天然味精包進粽子，野薑花粽讓山城再次熱鬧。</p></div>
+<p id="finalTime"></p>
+<p class="discuss"><b>全組討論，準備上台分享：</b>為什麼說野薑花像「天然味精」？如果內灣交通很方便，還會有野薑花粽嗎？</p>
+</div>
+
+<footer>
+<span>故事內容整理自 TVBS《一步一腳印》（2009）、新客家人群像〈彭瑞雲 一顆野薑花粽 讓你想到內灣〉與食尚玩家報導。「天然味精」是比喻，野薑花其實是天然香料。</span>
+<button class="linkish" id="resetBtn" type="button">清除我的進度</button>
+</footer>
+</section>
+
+<section id="teacher">
+<header>
+<p class="eyebrow">老師專區</p>
+<h1>關卡與答案</h1>
+<p class="lead">學生頁面上沒有這頁的入口；在網址最後加上 #teacher 就能打開。</p>
+</header>
+<div class="note">課前檢查：每台平板打開遊戲，按最下方「清除我的進度」。關卡要依序解開；每一關都有「看提示」。</div>
+<table id="keyTable"><thead><tr><th>關卡</th><th>題型</th><th>答案</th><th>得到的故事碎片</th></tr></thead><tbody></tbody></table>
+<footer><a href="#" style="color:var(--mist)">回到遊戲</a></footer>
+</section>
+
+</div>
+
+<dialog id="dlg" aria-labelledby="dlgTitle"><div class="dlg" id="dlgBody"></div></dialog>
+<dialog id="confirmDlg" aria-labelledby="cfTitle">
+<div class="dlg">
+<h2 id="cfTitle">要清除進度嗎？</h2>
+<p class="story">解開的關卡和故事碎片都會清掉，時間也會重新計算。</p>
+<div class="row">
+<button class="btn" id="cfYes" type="button" style="background:#8A3B2A;color:#fff">清除</button>
+<button class="btn ghost" id="cfNo" type="button" style="color:var(--ink);border-color:#9AA79C">取消</button>
+</div>
+</div>
+</dialog>
+
+<script>
+const SRC = {
+  tvbs: ['TVBS《一步一腳印》內灣的野薑花粽（2009）','https://news.tvbs.com.tw/local/131493'],
+  hakka: ['新客家人群像〈彭瑞雲 一顆野薑花粽 讓你想到內灣〉','https://ir.lib.nycu.edu.tw/handle/11536/123005'],
+  taste: ['食尚玩家〈內灣老街一日遊＋美食攻略〉','https://supertaste.tvbs.com.tw/travel/357736']
+};
+/* 故事碎片：② 被撕成上下兩半 */
+const PIECES = {
+  f1:  {title:'故事 ①　山城的過去', short:'以前是礦鎮，後來沒落了', text:'內灣在新竹縣橫山鄉的山裡，以前因為挖礦而熱鬧。礦挖完後，年輕人到大城市工作，山城慢慢安靜下來。', src:['hakka'], torn:''},
+  f2a: {title:'故事 ②（上半張）', short:'走很遠才買得到調味料……', text:'以前山裡交通不方便，想買味精這類調味料，要走很遠的路。大家只好在身邊找替代品……答案就開在溪邊。', src:['taste'], torn:'torn-a'},
+  f2b: {title:'故事 ②（下半張）', short:'……找到替代品：野薑花', text:'……客家人發現，油羅溪畔的野薑花很香，就拿它來調味，成了山城的「天然味精」。', src:['taste'], torn:'torn-b'},
+  f3:  {title:'故事 ③　再次熱鬧的山城', short:'野薑花粽讓山城再次熱鬧', text:'後來，當地人趁著政府推動「一鄉一特色」，把野薑花根做成的天然味精加進粽子，再用野薑花葉包起來。野薑花粽大受歡迎，讓花田和山城重新熱鬧起來。', src:['hakka','tvbs']}
+};
+const ORDER_STORIES = [
+  {label:'以前內灣因為挖礦而熱鬧，礦挖完後，山城慢慢安靜下來。', no:'①'},
+  {label:'山裡買調味料要走很遠，客家人就用溪邊的野薑花當「天然味精」。', no:'②'},
+  {label:'當地人把天然味精包進粽子，野薑花粽讓山城再次熱鬧起來。', no:'③'}
+];
+const WINDOW_SVG = '<svg viewBox="0 0 520 300" role="img" aria-label="窗外是傍晚的溪邊，溪岸長滿一叢叢綠葉，開著像白蝴蝶的花"><defs><linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1D3A33"/><stop offset="1" stop-color="#D9A35B"/></linearGradient><g id="wl"><ellipse cx="-8" cy="2" rx="9" ry="5.5" transform="rotate(-25 -8 2)" fill="#F4F1E6"/><ellipse cx="8" cy="1" rx="9" ry="5.5" transform="rotate(22 8 1)" fill="#F4F1E6"/><ellipse cx="0" cy="-6" rx="5.5" ry="8" fill="#FFFDF6"/><circle cx="2" cy="-8" r="1.6" fill="#D9A35B"/></g></defs><rect width="520" height="300" fill="url(#wsky)"/><circle cx="420" cy="60" r="24" fill="#F3DFC0" opacity=".85"/><path d="M0 170 L90 110 L180 160 L270 100 L380 160 L520 110 L520 210 L0 210Z" fill="#2E4B3C"/><rect y="210" width="520" height="90" fill="#2E5A5C"/><g stroke="#9CC3BF" stroke-width="3" opacity=".4" fill="none"><path d="M300 260 q20 -6 40 0 t40 0"/><path d="M380 285 q20 -6 40 0 t40 0"/></g><g fill="#4F7A31"><ellipse cx="60" cy="220" rx="10" ry="40" transform="rotate(-12 60 220)"/><ellipse cx="95" cy="214" rx="10" ry="46" transform="rotate(8 95 214)"/><ellipse cx="130" cy="220" rx="10" ry="40" transform="rotate(-6 130 220)"/><ellipse cx="165" cy="216" rx="10" ry="44" transform="rotate(12 165 216)"/><ellipse cx="200" cy="222" rx="10" ry="38" transform="rotate(-8 200 222)"/></g><use href="#wl" transform="translate(68 178) scale(1.5)"/><use href="#wl" transform="translate(104 168) scale(1.6)"/><use href="#wl" transform="translate(138 180) scale(1.4)"/><use href="#wl" transform="translate(172 170) scale(1.6)"/><use href="#wl" transform="translate(206 184) scale(1.3)"/><text x="300" y="232" font-size="16" fill="#9CC3BF" font-family="Noto Sans TC, sans-serif">油羅溪</text></svg>';
+const LEVELS = [
+  {id:'L1', title:'被風吹散的招牌', type:'排字鎖', gives:'f1',
+   q:'老街口的木招牌被大風吹散了，掉下來 4 個字。照正確的順序點一點，把招牌排回去，就知道我們在哪裡！', tiles:['街','灣','老','內'], ans:'內灣老街',
+   hint:'這是新竹縣橫山鄉一條有名的老街，第一個字是「內」。'},
+  {id:'L2', title:'空空的調味罐', type:'謎語・文字鎖', gives:'f2a',
+   q:'「白白小顆粒，煮菜加一點，湯就變鮮甜；以前住在山裡，要走好遠的路才買得到我。」我是什麼？請輸入 2 個字。', ans:['味精'],
+   hint:'一種調味料，第二個字是「精」。'},
+  {id:'L3', title:'窗外的替代品', type:'觀察題・文字鎖', gives:'f2b', window:true,
+   q:'故事 ② 上半張說：替代品「就開在溪邊」。窗外溪邊開著這種白花，它叫什麼名字？請輸入 3 個字。', ans:['野薑花','野姜花'],
+   hint:'它的名字裡有一種會辣的植物，花長得像白蝴蝶。'},
+  {id:'L4', title:'藏在泥土裡的秘密', type:'部位鎖', gives:'f3',
+   q:'「花在上面開，我在泥裡埋；曬乾磨成粉，粽子香起來。」野薑花的哪一個部位，可以做成天然味精？', parts:['花','葉','根','種子'], ans:'根',
+   hint:'它長在泥土裡，看不到。'}
+];
+
+const KEY = 'neiwan-lily-puzzle-v4';
+let st = {solved:[], ordered:false, t0:null, t1:null};
+try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && Array.isArray(s.solved)) st = Object.assign(st, s); } catch (e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, '0');
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const lockSVG = on => `<svg viewBox="0 0 26 30" aria-hidden="true"><path d="M7 13 V8 Q7 2 13 2 Q19 2 19 8 ${on ? 'V6' : 'V13'}" fill="none" stroke="${on ? '#D9A35B' : '#5B7A66'}" stroke-width="3" ${on ? 'transform="translate(6 -2)"' : ''}/><rect x="3" y="12" width="20" height="16" rx="3" fill="${on ? '#D9A35B' : 'none'}" stroke="${on ? '#D9A35B' : '#5B7A66'}" stroke-width="2.5"/></svg>`;
+function startClock(){ if (!st.t0) { st.t0 = Date.now(); save(); } }
+const has = p => LEVELS.some(l => l.gives === p && st.solved.includes(l.id));
+
+/* 對話框 */
+const dlg = $('dlg');
+function pieceHTML(p){ const d = PIECES[p]; return `<p class="tag">故事碎片</p><h2>${d.title}</h2><p class="story">${d.text}</p><p class="src">資料來源：${d.src.map(k => `<a href="${SRC[k][1]}" target="_blank" rel="noopener">${SRC[k][0]}</a>`).join('、')}</p>`; }
+function show(html){ $('dlgBody').innerHTML = html + '<button class="btn dark" type="button" id="dlgClose" style="align-self:flex-start">收進故事拼圖</button>'; $('dlgClose').addEventListener('click', () => dlg.close()); try { dlg.showModal(); } catch (e) { dlg.setAttribute('open', ''); } }
+
+/* 關卡 */
+function solve(L){ if (!st.solved.includes(L.id)) { st.solved.push(L.id); save(); } render(); show(`<p class="tag" style="color:#2F4A26">✔ ${L.title}・解開了！</p>` + pieceHTML(L.gives)); }
+function buildLevel(L, i){
+  const el = document.createElement('article');
+  const solved = st.solved.includes(L.id);
+  const active = !solved && (i === 0 || st.solved.includes(LEVELS[i - 1].id));
+  el.className = 'level ' + (solved ? 'solved' : active ? 'active' : 'locked');
+  el.innerHTML = `<div class="lvhead"><span class="lvno">第 ${i + 1} 關</span><h2>${solved || active ? L.title : '？？？'}</h2><span class="lvtype">${L.type}</span></div>`;
+  if (!solved && !active) { el.insertAdjacentHTML('beforeend', '<p class="q" style="font-size:15px">解開上一關後才會打開。</p>'); return el; }
+  if (solved) {
+    const ans = Array.isArray(L.ans) ? L.ans[0] : L.ans;
+    el.insertAdjacentHTML('beforeend', `<div class="got"><p>答案：${ans}</p><button class="btn dark" type="button">讀故事碎片：${PIECES[L.gives].title}</button></div>`);
+    el.querySelector('.btn').addEventListener('click', () => show(pieceHTML(L.gives)));
+    return el;
+  }
+  el.insertAdjacentHTML('beforeend', `<p class="q">${L.q}</p>`);
+  if (L.window) el.insertAdjacentHTML('beforeend', `<div class="window"><img src="lily.jpg" alt="窗外溪邊開的白花：花瓣潔白、中心帶點淡黃，長在一叢叢細長的綠葉之間" width="900" height="900"></div>`);
+  const fb = document.createElement('p'); fb.className = 'fb'; fb.setAttribute('aria-live', 'polite');
+  const fail = m => { fb.textContent = m; fb.style.color = '#F2B8A6'; };
+  if (L.tiles) {
+    let picked = [];
+    const slots = document.createElement('div'); slots.className = 'slots';
+    const tiles = document.createElement('div'); tiles.className = 'tiles';
+    const draw = () => {
+      slots.innerHTML = L.ans.split('').map((c, k) => `<span class="slot ${picked[k] !== undefined ? 'f' : ''}">${picked[k] !== undefined ? L.tiles[picked[k]] : ''}</span>`).join('');
+      tiles.innerHTML = '';
+      L.tiles.forEach((t, k) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'tile'; b.textContent = t; b.disabled = picked.includes(k);
+        b.addEventListener('click', () => {
+          startClock(); picked.push(k); draw();
+          if (picked.length === L.tiles.length) {
+            if (picked.map(x => L.tiles[x]).join('') === L.ans) solve(L);
+            else { fail('招牌好像怪怪的，再排一次。'); setTimeout(() => { picked = []; draw(); }, 700); }
+          }
+        });
+        tiles.appendChild(b);
+      });
+    };
+    const reset = document.createElement('button'); reset.type = 'button'; reset.className = 'btn ghost'; reset.textContent = '重新排';
+    reset.addEventListener('click', () => { picked = []; fb.textContent = ''; draw(); });
+    const row = document.createElement('div'); row.className = 'row'; row.append(tiles, reset);
+    el.append(slots, row); draw();
+  } else if (L.parts) {
+    const box = document.createElement('div'); box.className = 'parts';
+    L.parts.forEach(p => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'part'; b.textContent = p;
+      b.addEventListener('click', () => { startClock(); if (p === L.ans) solve(L); else { b.classList.add('wrong'); fail('不是這個部位，再讀一次謎語。'); } });
+      box.appendChild(b);
+    });
+    el.appendChild(box);
+  } else {
+    const f = document.createElement('form'); f.className = 'row';
+    f.innerHTML = `<input aria-label="輸入答案" autocomplete="off" maxlength="6"><button class="btn" type="submit">開鎖</button>`;
+    f.addEventListener('submit', e => {
+      e.preventDefault(); startClock();
+      const v = f.querySelector('input').value.replace(/\s/g, '');
+      if (!v) return fail('先輸入答案再開鎖。');
+      if (L.ans.includes(v)) solve(L); else fail('鎖沒有打開，再想想看，或先看提示。');
+    });
+    el.appendChild(f);
+  }
+  el.appendChild(fb);
+  const h = document.createElement('button'); h.type = 'button'; h.className = 'linkish'; h.textContent = '看提示';
+  h.addEventListener('click', () => { const p = document.createElement('p'); p.className = 'hint'; p.textContent = '提示：' + L.hint; h.replaceWith(p); });
+  el.appendChild(h);
+  return el;
+}
+
+/* 最後一關：排順序 */
+let ordShuffle = shuffle([0, 1, 2]), ordNext = 0;
+function renderOrder(){
+  const box = $('order'); box.innerHTML = '';
+  ordShuffle.forEach(i => {
+    const d = st.ordered || i < ordNext;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'frag' + (d ? ' done' : ''); b.disabled = d;
+    b.innerHTML = `<span class="n">${d ? i + 1 : ''}</span><span>${ORDER_STORIES[i].label}</span>`;
+    b.addEventListener('click', () => {
+      if (i === ordNext) {
+        ordNext++;
+        if (ordNext === 3) { st.ordered = true; st.t1 = Date.now(); save(); render(); $('orderFb').textContent = '故事拼好了！'; $('orderFb').style.color = 'var(--leaf)'; setTimeout(() => $('final').scrollIntoView({behavior:'smooth', block:'center'}), 300); return; }
+        renderOrder();
+      } else { b.classList.add('shake'); ordNext = 0; $('orderFb').textContent = '順序不對，從第一段重新點。想想看：故事要從山城的樣子說起，還是從粽子說起？'; $('orderFb').style.color = '#F2B8A6'; setTimeout(renderOrder, 380); }
+    });
+    box.appendChild(b);
+  });
+}
+
+/* 計時 */
+function fmt(ms){ const s = Math.floor(ms / 1000); return `${pad(Math.floor(s / 60))}:${pad(s % 60)}`; }
+setInterval(() => { if (st.t0) $('timer').firstChild.nodeValue = fmt((st.t1 || Date.now()) - st.t0); }, 1000);
+
+function render(){
+  $('locks').innerHTML = LEVELS.map(L => `<span class="lk" title="${L.title}">${lockSVG(st.solved.includes(L.id))}</span>`).join('');
+  $('lockStat').innerHTML = `關卡 ${st.solved.length} / 4<small>依序解開</small>`;
+  const n = Object.keys(PIECES).filter(has).length;
+  $('pieceStat').innerHTML = `故事碎片 ${n} / 4<small>故事 ② 有上下兩半</small>`;
+  const lv = $('levels'); lv.innerHTML = '';
+  LEVELS.forEach((L, i) => lv.appendChild(buildLevel(L, i)));
+  $('pieces').innerHTML = '';
+  Object.keys(PIECES).forEach(p => {
+    const d = PIECES[p], on = has(p);
+    const el = document.createElement(on ? 'button' : 'div');
+    el.className = 'piece ' + (on ? 'on ' : '') + (d.torn || '');
+    if (on) { el.type = 'button'; el.style.font = 'inherit'; el.style.textAlign = 'left'; el.style.cursor = 'pointer'; el.addEventListener('click', () => show(pieceHTML(p))); }
+    el.innerHTML = `<b>${on ? d.title : '？？？'}</b><span>${on ? d.short : '還沒找到這片碎片'}</span>`;
+    $('pieces').appendChild(el);
+  });
+  const all = st.solved.length === LEVELS.length;
+  $('orderPanel').classList.toggle('hidden', !all);
+  if (all) renderOrder();
+  $('final').classList.toggle('show', !!st.ordered);
+  if (st.ordered && st.t0) $('finalTime').textContent = `你們花了 ${fmt(st.t1 - st.t0)} 拼好野薑花粽的故事。`;
+  if (st.t0) $('timer').firstChild.nodeValue = fmt((st.t1 || Date.now()) - st.t0);
+}
+
+/* 清除進度 */
+const cf = $('confirmDlg');
+$('resetBtn').addEventListener('click', () => { try { cf.showModal(); } catch (e) { cf.setAttribute('open', ''); } });
+$('cfNo').addEventListener('click', () => cf.close());
+$('cfYes').addEventListener('click', () => { st = {solved:[], ordered:false, t0:null, t1:null}; ordNext = 0; ordShuffle = shuffle([0, 1, 2]); save(); $('timer').firstChild.nodeValue = '00:00'; $('orderFb').textContent = ''; render(); cf.close(); });
+
+/* 老師專區 */
+function buildTeacher(){
+  const tb = document.querySelector('#keyTable tbody'); if (tb.children.length) return;
+  LEVELS.forEach((L, i) => {
+    const tr = document.createElement('tr');
+    [`第 ${i + 1} 關：${L.title}`, L.type, Array.isArray(L.ans) ? L.ans.join('／') : L.ans, PIECES[L.gives].title].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
+    tb.appendChild(tr);
+  });
+  const tr = document.createElement('tr');
+  ['最後一關：排故事順序', '排序', '① 礦鎮沒落 → ② 野薑花當天然味精 → ③ 野薑花粽讓山城熱鬧', '完成'].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
+  tb.appendChild(tr);
+}
+function route(){ const t = location.hash === '#teacher'; document.body.classList.toggle('teacher', t); if (t) buildTeacher(); window.scrollTo(0, 0); }
+addEventListener('hashchange', route);
+
+/* 螢火蟲 */
+(function(){
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cv = $('fireflies'), ctx = cv.getContext('2d'); let W, H; const flies = [];
+  function size(){ W = cv.width = innerWidth; H = cv.height = innerHeight; }
+  size(); addEventListener('resize', size);
+  for (let i = 0; i < 24; i++) flies.push({x:Math.random(), y:Math.random(), p:Math.random() * 6.28, s:0.0003 + Math.random() * 0.0006, a:Math.random() * 6.28});
+  (function tick(t){
+    ctx.clearRect(0, 0, W, H);
+    flies.forEach(f => {
+      f.a += (Math.random() - 0.5) * 0.2; f.x = (f.x + Math.cos(f.a) * f.s + 1) % 1; f.y = (f.y + Math.sin(f.a) * f.s + 1) % 1;
+      const glow = 0.25 + 0.75 * Math.max(0, Math.sin(t / 900 + f.p));
+      const g = ctx.createRadialGradient(f.x * W, f.y * H, 0, f.x * W, f.y * H, 10);
+      g.addColorStop(0, `rgba(226,240,150,${0.8 * glow})`); g.addColorStop(1, 'rgba(226,240,150,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(f.x * W, f.y * H, 10, 0, 6.28); ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  })(0);
+})();
+
+render();
+route();
+</script>
+</body>
+</html>
